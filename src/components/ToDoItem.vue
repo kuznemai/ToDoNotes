@@ -1,56 +1,87 @@
 <script setup>
-import {ref} from 'vue';
+import { defineProps, defineEmits, ref, watch } from 'vue';
 
-const currentDate = ref(new Date());
+const props = defineProps({
+  id: Number,
+  title: String,
+  isChecked: Boolean
+})
 
-const text = ref('Купить макаронов');
+const emit = defineEmits(['deleteItem','sendCheckboxState','sendNewText'])
+
+function deleteItem() {
+  emit('deleteItem', props.id)
+}
+
+
+const checkedState = ref(props.isChecked)
+
+watch(() => checkedState.value, (newValue) => {
+  checkedState.value = newValue
+})
+
+function sendCheckboxState(){
+  emit('sendCheckboxState', { id: props.id, isChecked: checkedState.value })
+}
+
+function handleCheckboxChange(){
+  checkedState.value = !checkedState.value
+  sendCheckboxState()
+}
+
+
 const isEditing = ref(false)
 
-const formattedDate = ref(currentDate.value.toLocaleDateString('ru-RU', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric'
-}));
 
-function editText() {
-  isEditing.value = true
+
+function editNote(){
+  isEditing.value = true;
+  console.log('editNote')
+}
+function stopEditingNote(){
+  isEditing.value = false;
+  sendText()
+  console.log('stopEditingNote')
+
 }
 
-function stopEditing() {
-  isEditing.value = false
+const innerText = ref(props.title);
+
+function sendText(){
+  emit ('sendNewText', props.id, innerText.value)
 }
 
+// watch(innerText.value, (newVal) => innerText.value = newVal)
 
 </script>
 
 <template>
-
   <li class="list-item">
-    <p v-if="!isEditing" @click="editText" class="big">{{ text }}</p>
+    Я заметка номер {{ props.id }}
+    <p v-if="!isEditing" @click="editNote" class="big">{{ innerText }}</p>
     <input
         v-else
+        @blur="stopEditingNote"
+        @keydown.enter="stopEditingNote"
+        v-model="innerText"
         type="text"
         class="edit-input"
-        v-model="text"
-        @blur="stopEditing"
-        @keydown.enter="stopEditing">
+        placeholder="Введите вашу заметку"
+    />
     <form>
-      <input type="checkbox" id="checkbox1">
-      <label for="checkbox1">Done</label>
+      <input
+          type="checkbox"
+          id="checkbox"
+          :checked="checkedState"
+          @change="handleCheckboxChange"
+      />
+      <label>Done</label>
     </form>
-    <p>{{ formattedDate }}</p>
-    <div class="status">
-      <div class="circle"></div>
-      <p class="done small">Выполняется</p>
-    </div>
-    <button class="delete">Delete</button>
+    <button @click="deleteItem" class="delete">Delete</button>
   </li>
-
-
 </template>
 
 <style>
-
 .wrapper {
   display: flex;
 }
@@ -61,63 +92,26 @@ function stopEditing() {
   align-items: center;
   padding: 10px;
   width: 200px;
-  height: 250px;
+  height: 300px;
   border: 1px solid #000000;
   border-radius: 20px;
-}
-
-.status {
-  display: flex;
-  align-items: center;
-  width: 100px;
-  height: 20px;
-  border: 1px solid darkgreen;
-  border-radius: 10px;
-  padding: 5px;
-}
-
-.circle {
-  width: 10px;
-  height: 10px;
-  background-color: darkgreen;
-  border-radius: 5px;
-  margin-right: 5px;
-}
-
-.done {
-  color: darkgreen;
-}
-
-.calcelled {
-  color: red;
-}
-
-.pending {
-  color: orange;
-}
-
-.small {
-  font-size: 12px;
+  gap: 20px;
 }
 
 .big {
+  width: 180px;
+  height: 50px;
+  border: 1px solid grey;
   font-size: 24px;
 }
 
-input[type="checkbox"] {
-  accent-color: #17880f;
-  width: 20px;
-  height: 20px;
-}
-
 .delete {
-  width: 70px;
-  height: 30px;
-  margin: 10px;
-  border: 1px solid red;
-  border-radius: 10px;
   background-color: red;
-  color: beige;
+  color: white;
+  width: 60px;
+  height: 30px;
+  border: 1px solid darkred;
+  border-radius: 10px;
 }
 
 .edit-input {
