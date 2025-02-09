@@ -2,26 +2,24 @@
 import { defineProps, defineEmits, ref, watch } from 'vue';
 
 const props = defineProps({
-  id: Number,
-  title: String,
-  isChecked: Boolean
+  todo: Object
 })
 
 const emit = defineEmits(['deleteItem','sendCheckboxState','sendNewText'])
 
 function deleteItem() {
-  emit('deleteItem', props.id)
+  emit('deleteItem', props.todo.id)
 }
 
 
-const checkedState = ref(props.isChecked)
+const checkedState = ref(props.todo.isChecked)
 
 watch(() => checkedState.value, (newValue) => {
   checkedState.value = newValue
 })
 
 function sendCheckboxState(){
-  emit('sendCheckboxState', { id: props.id, isChecked: checkedState.value })
+  emit('sendCheckboxState', { id: props.todo.id, isChecked: checkedState.value })
 }
 
 function handleCheckboxChange(){
@@ -31,8 +29,6 @@ function handleCheckboxChange(){
 
 
 const isEditing = ref(false)
-
-
 
 function editNote(){
   isEditing.value = true;
@@ -45,10 +41,10 @@ function stopEditingNote(){
 
 }
 
-const innerText = ref(props.title);
+const innerText = ref(props.todo.title);
 
 function sendText(){
-  emit ('sendNewText', props.id, innerText.value)
+  emit ('sendNewText', props.todo.id, innerText.value)
 }
 
 // watch(innerText.value, (newVal) => innerText.value = newVal)
@@ -56,8 +52,8 @@ function sendText(){
 </script>
 
 <template>
-  <li class="list-item">
-    Я заметка номер {{ props.id }}
+
+    Я заметка номер {{ props.todo.id }}
     <p v-if="!isEditing" @click="editNote" class="big">{{ innerText }}</p>
     <input
         v-else
@@ -78,25 +74,10 @@ function sendText(){
       <label>Done</label>
     </form>
     <button @click="deleteItem" class="delete">Delete</button>
-  </li>
+
 </template>
 
 <style>
-.wrapper {
-  display: flex;
-}
-
-.list-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px;
-  width: 200px;
-  height: 300px;
-  border: 1px solid #000000;
-  border-radius: 20px;
-  gap: 20px;
-}
 
 .big {
   width: 180px;
