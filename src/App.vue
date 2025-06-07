@@ -1,6 +1,9 @@
 <script setup>
+
 import ToDoItem from './components/ToDoItem.vue';
 import {ref, computed} from "vue";
+
+
 
 
 let items = ref([
@@ -9,6 +12,8 @@ let items = ref([
   {id: 3, title: 'Buy butter', isChecked: false},
   {id: 4, title: 'Buy milk', isChecked: false}
 ])
+
+let draggedItem = ref(null);
 
 function removeItem(itemId) {
   items.value = items.value.filter(elem => elem.id !== itemId)
@@ -34,19 +39,6 @@ function addNewNote() {
   items.value.push({id: (Math.floor(Math.random() * (100 - 4 + 1) + 4)), title: '', isChecked: false})
 }
 
-// const groupedItems = computed(() => {
-//   const checked = [];
-//   const unchecked = [];
-//
-//   items.value.forEach(item => {
-//     if (item.isChecked) {
-//       checked.push(item);
-//     } else {
-//       unchecked.push(item);
-//     }
-//   });
-//   return { checked, unchecked };
-// });
 
 const itemsList = computed(() => {
   return items.value.reduce((acc, elem) => {
@@ -59,6 +51,21 @@ const itemsList = computed(() => {
   }, [{title: 'Not ready yet', items: [], class: 'items_list'}, {title: 'Ready', items: [], class: 'right_list'}])
 })
 console.log(itemsList.value)
+
+
+function onDragStart(item) {
+  draggedItem.value = item;
+  console.log(item)
+  console.log(draggedItem.value)
+}
+
+function onDrop() {
+  if (draggedItem.value) {
+    handleCheckbox({ id: draggedItem.value.id, isChecked: !draggedItem.value.isChecked });
+    draggedItem.value = null;
+  }
+}
+
 </script>
 
 <template>
@@ -66,8 +73,14 @@ console.log(itemsList.value)
     <div class="inprocess">
       <template v-for="(group, groupIndex) in itemsList" :key="groupIndex">
         <h3 class="header_title">{{ group.title }}</h3>
-        <ul :class="group.class">
-          <li class="list-item" v-for="item in group.items" :key="item.id">
+        <ul :class="group.class"
+            @dragover.prevent
+            @drop="onDrop">
+          <li class="list-item"
+              v-for="item in group.items"
+              :key="item.id"
+              draggable="true"
+              @dragstart="onDragStart(item)">
             <ToDoItem
                 :todo="item"
                 @delete-item="removeItem"
@@ -112,14 +125,15 @@ console.log(itemsList.value)
   gap: 15px;
   padding-bottom: 50px;
   border-bottom: 5px dashed grey;
+  height: 350px;
 }
 
 .right_list {
-
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   gap: 15px;
+  height: 350px;
 }
 
 .header_title {

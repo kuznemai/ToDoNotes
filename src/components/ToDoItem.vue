@@ -26,10 +26,7 @@ function handleCheckboxChange(){
   checkedState.value = !checkedState.value
   sendCheckboxState()
 }
-
-
 const isEditing = ref(false)
-
 function editNote(){
   isEditing.value = true;
   console.log('editNote')
@@ -46,8 +43,6 @@ const innerText = ref(props.todo.title);
 function sendText(){
   emit ('sendNewText', props.todo.id, innerText.value)
 }
-
-// watch(innerText.value, (newVal) => innerText.value = newVal)
 
 </script>
 
